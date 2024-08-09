@@ -9,20 +9,32 @@ import pytz
 import datetime
 from fake_useragent import UserAgent
 import random
+import get_video_aid
+import get_dynamic_oid
+
+
 
 with open('config.json', 'r', encoding='utf-8') as f:
         config = json.load(f)
-        oid = config['oid']
-        type = config['type']
+        # oid = config['oid']
+        # type = config['type']
         cookies_str = config['cookies_str']
-        sessdata = config['sessdata']
-        bili_jct = config['bili_jct']
+        sessdata_regx = 'SESSDATA=(.*?);'
+        sessdata = re.findall(sessdata_regx, cookies_str)[0]
+        bili_jct_regx = 'bili_jct=(.*?);'
+        bili_jct = re.findall(bili_jct_regx, cookies_str)[0]
         ps = config['ps']
         file_path_1 = config['file_path_1']
         file_path_2 = config['file_path_2']
         file_path_3 = config['file_path_3']
         down = config['down']
         up = config['up']
+        BV = config['BV']
+        if(BV.startswith('BV')):
+            oid = get_video_aid.get_video_aid(BV)
+            type = 1
+        else:
+            oid,type=get_dynamic_oid.get_dynamic(BV)
 
 # 重试次数限制
 MAX_RETRIES = 5
@@ -39,15 +51,15 @@ comments_current_2 = []
         # 将所有评论数据写入CSV文件
 with open(file_path_1, mode='a', newline='', encoding='utf-8-sig') as file:
     writer = csv.writer(file)
-    writer.writerow(['昵称', '性别', '时间', '点赞', '评论', 'IP属地','二级评论条数','等级','uid','rpid'])
+    writer.writerow(['昵称', '性别', '时间', '点赞', '评论', 'IP属地','二级评论条数','等级','uid','rpid',"BV","抓取时间"])
     writer.writerows(all_comments)
 with open(file_path_2, mode='a', newline='', encoding='utf-8-sig') as file:
     writer = csv.writer(file)
-    writer.writerow(['昵称', '性别', '时间', '点赞', '评论', 'IP属地','二级评论条数,条数相同说明在同一个人下面','等级','uid','rpid'])
+    writer.writerow(['昵称', '性别', '时间', '点赞', '评论', 'IP属地','二级评论条数,条数相同说明在同一个人下面','等级','uid','rpid',"BV","抓取时间"])
     writer.writerows(all_2_comments)
 with open(file_path_3, mode='a', newline='', encoding='utf-8-sig') as file:
     writer = csv.writer(file)
-    writer.writerow(['昵称', '性别', '时间', '点赞', '评论', 'IP属地', '二级评论条数', '等级', 'uid', 'rpid'])
+    writer.writerow(['昵称', '性别', '时间', '点赞', '评论', 'IP属地', '二级评论条数', '等级', 'uid', 'rpid',"BV","抓取时间"])
     writer.writerows(all_comments)
 
 with requests.Session() as session:
@@ -83,7 +95,8 @@ with requests.Session() as session:
                         sex = reply['member']['sex']
                         ctime = reply['ctime']
                         dt_object = datetime.datetime.fromtimestamp(ctime, datetime.timezone.utc)
-                        formatted_time = dt_object.strftime('%Y-%m-%d %H:%M:%S') + ' 北京时间'
+                        formatted_time = dt_object.strftime('%Y-%m-%d %H:%M:%S')
+                        current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
                         like = reply['like']
                         message = reply['content']['message'].replace('\n', ',')
                         location = reply['reply_control'].get('location', '未知')
@@ -92,7 +105,7 @@ with requests.Session() as session:
                         mid = str(reply['member']['mid'])
                         rpid = str(reply['rpid'])
                         count = reply['rcount']
-                        all_comments.append([name, sex, formatted_time, like, message, location,count,current_level,mid,rpid])
+                        all_comments.append([name, sex, formatted_time, like, message, location,count,current_level,mid,rpid,BV,current_time])
                         with open(file_path_1, mode='a', newline='', encoding='utf-8-sig') as file:
                             writer = csv.writer(file)
                             writer.writerows(all_comments)
@@ -126,14 +139,15 @@ with requests.Session() as session:
                                             sex = comment['member']['sex']
                                             ctime = comment['ctime']
                                             dt_object = datetime.datetime.fromtimestamp(ctime, datetime.timezone.utc)
-                                            formatted_time = dt_object.strftime('%Y-%m-%d %H:%M:%S') + ' 北京时间'
+                                            formatted_time = dt_object.strftime('%Y-%m-%d %H:%M:%S')
+                                            current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
                                             like = comment['like']
                                             message = comment['content']['message'].replace('\n', ',')
                                             location = comment['reply_control'].get('location', '未知')
                                             location = location.replace('IP属地：', '') if location else location
                                             current_level = comment['member']['level_info']['current_level']
                                             mid = str(comment['member']['mid'])
-                                            all_2_comments.append([name, sex, formatted_time, like, message, location, count,current_level,mid,rpid])
+                                            all_2_comments.append([name, sex, formatted_time, like, message, location, count,current_level,mid,rpid,BV,current_time])
                                             with open(file_path_2, mode='a', newline='', encoding='utf-8-sig') as file:
                                                 writer = csv.writer(file)
                                                 writer.writerows(all_2_comments)
@@ -170,14 +184,15 @@ with requests.Session() as session:
                                 sex = comment['member']['sex']
                                 ctime = comment['ctime']
                                 dt_object = datetime.datetime.fromtimestamp(ctime, datetime.timezone.utc)
-                                formatted_time = dt_object.strftime('%Y-%m-%d %H:%M:%S') + ' 北京时间'
+                                formatted_time = dt_object.strftime('%Y-%m-%d %H:%M:%S')
+                                current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
                                 like = comment['like']
                                 message = comment['content']['message'].replace('\n', ',')
                                 location = comment['reply_control'].get('location', '未知')
                                 location = location.replace('IP属地：', '') if location else location
                                 current_level = comment['member']['level_info']['current_level']
                                 mid = str(comment['member']['mid'])
-                                all_comments.append([name, sex, formatted_time, like, message, location,count,current_level,mid,rpid])
+                                all_comments.append([name, sex, formatted_time, like, message, location,count,current_level,mid,rpid,BV,current_time])
 
                                 with open(file_path_1, mode='a', newline='', encoding='utf-8-sig') as file:
                                     writer = csv.writer(file)
@@ -213,14 +228,15 @@ with requests.Session() as session:
                                                     sex = comment['member']['sex']
                                                     ctime = comment['ctime']
                                                     dt_object = datetime.datetime.fromtimestamp(ctime,datetime.timezone.utc)
-                                                    formatted_time = dt_object.strftime('%Y-%m-%d %H:%M:%S') + ' 北京时间'
+                                                    formatted_time = dt_object.strftime('%Y-%m-%d %H:%M:%S')
+                                                    current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
                                                     like = comment['like']
                                                     message = comment['content']['message'].replace('\n', ',')
                                                     location = comment['reply_control'].get('location', '未知')
                                                     location = location.replace('IP属地：', '') if location else location
                                                     current_level = comment['member']['level_info']['current_level']
                                                     mid = str(comment['member']['mid'])
-                                                    all_2_comments.append([name, sex, formatted_time, like, message, location, count,current_level,mid,rpid])
+                                                    all_2_comments.append([name, sex, formatted_time, like, message, location, count,current_level,mid,rpid,BV,current_time])
                                                     with open(file_path_2, mode='a', newline='',encoding='utf-8-sig') as file:
                                                         writer = csv.writer(file)
                                                         writer.writerows(all_2_comments)
