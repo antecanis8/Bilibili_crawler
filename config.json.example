@@ -4,7 +4,5 @@
   "file_path_1": "comments/test1_1.csv",
   "file_path_2": "comments/test1_2.csv",
   "file_path_3": "comments/test1_3.csv",
-  "down": 1,
-  "up": 1,
   "BV": "填写您需要爬取评论的视频的BV号，或者动态的id（动态的id就是链接中https://www.bilibili.com/opus/ 后面的这串数字）"
 }

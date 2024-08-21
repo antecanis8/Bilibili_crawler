@@ -34,7 +34,7 @@ with open('config.json', 'r', encoding='utf-8') as f:
         else:
             oid,type=get_dynamic_oid.get_dynamic(BV)
         down = 1
-        up=int(get_reply_count.get_reply_count(oid,type))
+        up=int(int(get_reply_count.get_reply_count(oid,type))/20)
 
 # 重试次数限制
 MAX_RETRIES = 5
