@@ -11,8 +11,8 @@ from fake_useragent import UserAgent
 import random
 import get_video_aid
 import get_dynamic_oid
-
-
+import get_reply_count
+import re
 
 with open('config.json', 'r', encoding='utf-8') as f:
         config = json.load(f)
@@ -27,14 +27,14 @@ with open('config.json', 'r', encoding='utf-8') as f:
         file_path_1 = config['file_path_1']
         file_path_2 = config['file_path_2']
         file_path_3 = config['file_path_3']
-        down = config['down']
-        up = config['up']
         BV = config['BV']
         if(BV.startswith('BV')):
             oid = get_video_aid.get_video_aid(BV)
             type = 1
         else:
             oid,type=get_dynamic_oid.get_dynamic(BV)
+        down = 1
+        up=int(get_reply_count.get_reply_count(oid,type))
 
 # 重试次数限制
 MAX_RETRIES = 5
