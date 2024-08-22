@@ -34,4 +34,3 @@ def get_video_aid(bv):
     video_aid = re.findall(aid_regx, content)[0]
     return video_aid
 
-# print(get_video_aid('BV1YM411k7FE'))
