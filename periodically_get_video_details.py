@@ -23,7 +23,7 @@ def run_your_program():
     all_counts.clear()
 
 
-schedule.every(10).seconds.do(run_your_program)  
+schedule.every(3).minutes.do(run_your_program)  
   
 if __name__ == "__main__":  
     while True:  

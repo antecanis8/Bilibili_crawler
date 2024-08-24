@@ -79,7 +79,8 @@ with requests.Session() as session:
         'type': type,
         'oid': oid,
         'ps': ps,
-        'mode': '3'
+        'mode': '2'
+        # 疑似 mode为0或者3都是按热度排序 为1或者2都是按时间排序
     }
     response = session.get(url_long, params=data, headers=headers)
     if response.status_code == 200:
@@ -169,7 +170,7 @@ with requests.Session() as session:
                     'type': type,
                     'oid': oid,
                     'ps': ps,
-                    'mode': '3'
+                    'mode': '2'
                 }
                 response = session.get(url_long, params=data, headers=headers)
                 if response.status_code == 200:
