@@ -14,7 +14,7 @@ import get_dynamic_oid
 import get_reply_count
 import re
 import wbi
-
+from tqdm import tqdm
 with open('config.json', 'r', encoding='utf-8') as f:
         config = json.load(f)
         # oid = config['oid']
@@ -52,15 +52,15 @@ img_key, sub_key = wbi.getWbiKeys()
 
         # 将所有评论数据写入CSV文件
 with open(file_path_1, mode='a', newline='', encoding='utf-8-sig') as file:
-    writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_NONE, escapechar='\\')
+    writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_ALL)
     writer.writerow(['昵称', '性别', '时间', '点赞', '评论', 'IP属地','二级评论条数','等级','uid','rpid',"BV","抓取时间"])
     writer.writerows(all_comments)
 with open(file_path_2, mode='a', newline='', encoding='utf-8-sig') as file:
-    writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_NONE, escapechar='\\')
+    writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_ALL)
     writer.writerow(['昵称', '性别', '时间', '点赞', '评论', 'IP属地','二级评论条数,条数相同说明在同一个人下面','等级','uid','rpid',"BV","抓取时间"])
     writer.writerows(all_2_comments)
 with open(file_path_3, mode='a', newline='', encoding='utf-8-sig') as file:
-    writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_NONE, escapechar='\\')
+    writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_ALL)
     writer.writerow(['昵称', '性别', '时间', '点赞', '评论', 'IP属地', '二级评论条数', '等级', 'uid', 'rpid',"BV","抓取时间"])
     writer.writerows(all_comments)
 
@@ -104,7 +104,7 @@ with requests.Session() as session:
                         formatted_time = dt_object.strftime('%Y-%m-%d %H:%M:%S')
                         current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
                         like = reply['like']
-                        message = reply['content']['message'].replace('\n', ',')
+                        message = reply['content']['message']
                         location = reply['reply_control'].get('location', '未知')
                         location = location.replace('IP属地：', '') if location else location
                         current_level = reply['member']['level_info']['current_level']
@@ -113,10 +113,10 @@ with requests.Session() as session:
                         count = reply['rcount']
                         all_comments.append([name, sex, formatted_time, like, message, location,count,current_level,mid,rpid,BV,current_time])
                         with open(file_path_1, mode='a', newline='', encoding='utf-8-sig') as file:
-                            writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_NONE, escapechar='\\')
+                            writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_ALL)
                             writer.writerows(all_comments)
                         with open(file_path_3, mode='a', newline='', encoding='utf-8-sig') as file:
-                            writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_NONE, escapechar='\\')
+                            writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_ALL)
                             writer.writerows(all_comments)
                         all_comments.clear()
                         if count != 0:
@@ -148,17 +148,17 @@ with requests.Session() as session:
                                             formatted_time = dt_object.strftime('%Y-%m-%d %H:%M:%S')
                                             current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
                                             like = comment['like']
-                                            message = comment['content']['message'].replace('\n', ',')
+                                            message = comment['content']['message']
                                             location = comment['reply_control'].get('location', '未知')
                                             location = location.replace('IP属地：', '') if location else location
                                             current_level = comment['member']['level_info']['current_level']
                                             mid = str(comment['member']['mid'])
                                             all_2_comments.append([name, sex, formatted_time, like, message, location, count,current_level,mid,rpid,BV,current_time])
                                             with open(file_path_2, mode='a', newline='', encoding='utf-8-sig') as file:
-                                                writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_NONE, escapechar='\\')
+                                                writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_ALL)
                                                 writer.writerows(all_2_comments)
                                             with open(file_path_3, mode='a', newline='', encoding='utf-8-sig') as file:
-                                                writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_NONE, escapechar='\\')
+                                                writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_ALL)
                                                 writer.writerows(all_2_comments)
                                             all_2_comments.clear()
                                     else:
@@ -168,7 +168,7 @@ with requests.Session() as session:
                 else:
                     print("该视频/动态不含有置顶评论")
     pagination_str=''
-    for page in range(down, up + 1):
+    for page in tqdm(range(down, up + 1)):
         for retry in range(MAX_RETRIES):
             try:
                 data = {
@@ -201,7 +201,7 @@ with requests.Session() as session:
                                 formatted_time = dt_object.strftime('%Y-%m-%d %H:%M:%S')
                                 current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
                                 like = comment['like']
-                                message = comment['content']['message'].replace('\n', ',')
+                                message = comment['content']['message']
                                 location = comment['reply_control'].get('location', '未知')
                                 location = location.replace('IP属地：', '') if location else location
                                 current_level = comment['member']['level_info']['current_level']
@@ -209,10 +209,10 @@ with requests.Session() as session:
                                 all_comments.append([name, sex, formatted_time, like, message, location,count,current_level,mid,rpid,BV,current_time])
 
                                 with open(file_path_1, mode='a', newline='', encoding='utf-8-sig') as file:
-                                    writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_NONE, escapechar='\\')
+                                    writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_ALL)
                                     writer.writerows(all_comments)
                                 with open(file_path_3, mode='a', newline='', encoding='utf-8-sig') as file:
-                                    writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_NONE, escapechar='\\')
+                                    writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_ALL)
                                     writer.writerows(all_comments)
                                 all_comments.clear()
                                 if count != 0:
@@ -245,17 +245,17 @@ with requests.Session() as session:
                                                     formatted_time = dt_object.strftime('%Y-%m-%d %H:%M:%S')
                                                     current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
                                                     like = comment['like']
-                                                    message = comment['content']['message'].replace('\n', ',')
+                                                    message = comment['content']['message']
                                                     location = comment['reply_control'].get('location', '未知')
                                                     location = location.replace('IP属地：', '') if location else location
                                                     current_level = comment['member']['level_info']['current_level']
                                                     mid = str(comment['member']['mid'])
                                                     all_2_comments.append([name, sex, formatted_time, like, message, location, count,current_level,mid,rpid,BV,current_time])
                                                     with open(file_path_2, mode='a', newline='',encoding='utf-8-sig') as file:
-                                                        writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_NONE, escapechar='\\')
+                                                        writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_ALL)
                                                         writer.writerows(all_2_comments)
                                                     with open(file_path_3, mode='a', newline='',encoding='utf-8-sig') as file:
-                                                        writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_NONE, escapechar='\\')
+                                                        writer = csv.writer(file, delimiter=',', quoting=csv.QUOTE_ALL)
                                                         writer.writerows(all_2_comments)
                                                     all_2_comments.clear()
                                         else:

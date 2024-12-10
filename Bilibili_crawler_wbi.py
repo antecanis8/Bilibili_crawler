@@ -14,7 +14,7 @@ import get_dynamic_oid
 import get_reply_count
 import re
 import wbi
-
+from tqdm import tqdm
 with open('config.json', 'r', encoding='utf-8') as f:
         config = json.load(f)
         # oid = config['oid']
@@ -25,9 +25,9 @@ with open('config.json', 'r', encoding='utf-8') as f:
         bili_jct_regx = 'bili_jct=(.*?);'
         bili_jct = re.findall(bili_jct_regx, cookies_str)[0]
         ps = config['ps']
-        file_path_1 = config['file_path_1']
-        file_path_2 = config['file_path_2']
-        file_path_3 = config['file_path_3']
+        file_path_1 = config['output_path']+"/"+config['BV']+"_1.csv"
+        file_path_2 = config['output_path']+"/"+config['BV']+"_2.csv"
+        file_path_3 = config['output_path']+"/"+config['BV']+"_all.csv"
         BV = config['BV']
         if(BV.startswith('BV')):
             oid = get_video_aid.get_video_aid(BV)
@@ -168,7 +168,7 @@ with requests.Session() as session:
                                     print(f"请求错误")
                 else:
                     print("该视频/动态不含有置顶评论")
-    for page in range(down, up + 1):
+    for page in tqdm(range(down, up + 1)):
         for retry in range(MAX_RETRIES):
             try:
                 data = {
